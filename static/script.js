@@ -1,21 +1,12 @@
-document.getElementById("header").addEventListener("click", function () {
-  window.location.href = "{{ url_for('index') }}";
-});
+const container = document.getElementById("buttonContainer");
 
 buttons.forEach(function (btn) {
-  document.getElementById(btn.id).addEventListener("click", function () {
+  const b = document.createElement("button");
+  b.id = btn.id;
+  b.textContent = btn.id.replace("btn", "").padStart(3, "0");
+  b.className = "btn";
+  b.addEventListener("click", function () {
     window.location.href = btn.url;
   });
-});
-
-document.getElementById("header").addEventListener("click", function () {
-  window.location.href = "/"; // HTML 側で固定 URL にする
-});
-
-document.getElementById("backBtn").addEventListener("click", function () {
-  window.location.href = "/"; // HTML 側で固定 URL にする
-});
-
-document.getElementById("backBtn").addEventListener("click", function () {
-  window.location.href = "{{ url_for('index') }}";
+  container.appendChild(b);
 });

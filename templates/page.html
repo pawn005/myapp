@@ -2,68 +2,23 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>{{ page_number }}</title>
-    <style>
-      /* 全体設定 */
-      body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        text-align: center;
-        background-color: #ffffff; /* 白基調 */
-        color: #222; /* シックな文字色 */
-        margin: 0;
-        padding: 0;
-      }
-
-      /* ヘッダー（タイトル部分） */
-      .header {
-        background-color: #ffffff; /* 白基調 */
-        color: #222;
-        padding: 10px 20px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 1.2em;
-        text-align: left;
-        border-bottom: 2px solid #ccc;
-        border-radius: 0; /* 角張り */
-      }
-
-      /* バックボタン */
-      .back-button {
-        background-color: #ffffff;
-        color: #222;
-        border: 2px solid #555;
-        border-radius: 0; /* 角張り */
-        padding: 8px 12px;
-        font-weight: bold;
-        cursor: pointer;
-        margin: 10px;
-      }
-
-      .back-button:hover {
-        background-color: #555;
-        color: #fff;
-      }
-
-      /* コンテンツ部分 */
-      .content {
-        margin-top: 40px;
-      }
-    </style>
+    <title>{{ "%03d"|format(page_id) }}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
   </head>
   <body>
-    <!-- タイトル部分：数字のみ表示、クリックでindexに戻る -->
-    <div id="header" class="header">{{ page_number }}</div>
-
-    <!-- バックボタン -->
-    <button id="backBtn" class="back-button">BACK</button>
-
+    <div class="header">
+      <span id="backBtn">BACK</span>
+      <span class="page-id">{{ "%03d"|format(page_id) }}</span>
+    </div>
     <div class="content">
-      <h2>ここに Page {{ page_number }} の内容を追加していきます</h2>
+      <h2>ここに Page {{ "%03d"|format(page_id) }} の内容を追加</h2>
     </div>
 
     <script>
-      // ヘッダークリックでもindexに戻る
-      document.getElementById("header").addEventListener("click", function () {
+      document.getElementById("backBtn").addEventListener("click", function () {
         window.location.href = "{{ url_for('index') }}";
       });
     </script>
