@@ -56,3 +56,40 @@ body {
   background-color: #555;
   color: #fff;
 }
+
+/* ボタン共通 */
+.button {
+  display: inline-block;
+  padding: 10px 15px;
+  margin: 5px;
+  background-color: #ffffff; /* 白基調 */
+  color: #222; /* シックな文字色 */
+  border: 2px solid #333;
+  border-radius: 0; /* 角張り */
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.button:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+/* BACKボタン */
+.back-button {
+  background-color: #ffffff;
+  color: #222;
+  border: 2px solid #555;
+  border-radius: 0;
+  padding: 8px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 10px;
+}
+
+.back-button:hover {
+  background-color: #555;
+  color: #fff;
+}

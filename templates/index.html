@@ -35,12 +35,12 @@
   </head>
   <body>
     <h1>PAGE</h1>
-    <div class="button-grid">
-      {% for page in pages %}
-      <form action="{{ url_for('page', page_id=page) }}" method="get">
-        <button type="submit" class="btn">Page {{ page }}</button>
-      </form>
-      {% endfor %}
-    </div>
+    <div class="button-container">
+<script>
+  const buttons = {{ buttons_json|safe }};
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+
   </body>
 </html>
