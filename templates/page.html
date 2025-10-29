@@ -57,12 +57,13 @@
         const pi_digits = "14159265358979323846264338327950288419716939937510";
 
         function drawNext() {
-          // 前のフレームを消す
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // 半透明の黒でキャンバスを塗りつぶして残像を作る
+          ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           const digit = parseInt(pi_digits[step]);
-          const angle = digit * 36 * Math.PI / 180; // 0~9 → 0~324度
-          const length = 200; // 固定長さで飛び出す
+          const angle = digit * 36 * Math.PI / 180;
+          const length = 200;
 
           const x = centerX + length * Math.cos(angle);
           const y = centerY + length * Math.sin(angle);
@@ -74,7 +75,7 @@
           ctx.lineTo(x, y);
           ctx.stroke();
 
-          step = (step + 1) % pi_digits.length; // 桁をループ
+          step = (step + 1) % pi_digits.length;
           requestAnimationFrame(drawNext);
         }
 
