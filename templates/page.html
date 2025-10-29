@@ -3,16 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <title>{{ "%03d"|format(page_id) }}</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
     <style>
-      /* 円周率アニメーション専用 */
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        background-color: black;
+        color: white;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        font-size: 1.2em;
+        cursor: pointer;
+      }
+
+      #backBtn {
+        color: white;
+        margin-right: 10px;
+      }
+
       #piCanvas {
         display: block;
         margin: 0 auto;
-        background: black;
+        background-color: black;
       }
     </style>
   </head>
@@ -22,13 +37,7 @@
       <span class="page-id">{{ "%03d"|format(page_id) }}</span>
     </div>
 
-    <div class="content">
-      {% if page_id == 0 %}
-      <canvas id="piCanvas"></canvas>
-      {% else %}
-      <h2>ここに Page {{ "%03d"|format(page_id) }} の内容を追加</h2>
-      {% endif %}
-    </div>
+    <canvas id="piCanvas"></canvas>
 
     <script>
       document.getElementById("backBtn").addEventListener("click", function() {
@@ -45,27 +54,28 @@
         const centerY = canvas.height / 2;
         let step = 0;
 
-        // πの小数部分（最初の50桁）
         const pi_digits = "14159265358979323846264338327950288419716939937510";
 
         function drawNext() {
-            if (step >= pi_digits.length) return;
+          // 前のフレームを消す
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const digit = parseInt(pi_digits[step]);
-            const angle = digit * 36 * Math.PI / 180;
-            const length = 10 + step * 0.5;
+          const digit = parseInt(pi_digits[step]);
+          const angle = digit * 36 * Math.PI / 180; // 0~9 → 0~324度
+          const length = 200; // 固定長さで飛び出す
 
-            const x = centerX + length * Math.cos(angle);
-            const y = centerY + length * Math.sin(angle);
+          const x = centerX + length * Math.cos(angle);
+          const y = centerY + length * Math.sin(angle);
 
-            ctx.strokeStyle = "white";
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(x, y);
-            ctx.stroke();
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
 
-            step++;
-            requestAnimationFrame(drawNext);
+          step = (step + 1) % pi_digits.length; // 桁をループ
+          requestAnimationFrame(drawNext);
         }
 
         drawNext();
