@@ -1,15 +1,46 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>Flaskデモページ</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1 id="main-text">Hello, Flask!!</h1>
-    <p>ここに自由に文字を追加・変更できます。</p>
-    <button onclick="changeText()">ボタンで文字変更</button>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>メインメニュー</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        background-color: #f5f5f5;
+      }
+      h1 {
+        margin-top: 30px;
+      }
+      .button-grid {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr); /* 横10列×縦10行 */
+        gap: 10px;
+        max-width: 800px;
+        margin: 20px auto;
+      }
+      .btn {
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ページ選択</h1>
+    <div class="button-grid">
+      {% for page in pages %}
+      <form action="{{ url_for('page', page_id=page) }}" method="get">
+        <button type="submit" class="btn">Page {{ page }}</button>
+      </form>
+      {% endfor %}
+    </div>
+  </body>
 </html>

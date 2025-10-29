@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Page {{ page_id }}</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        background-color: #fff;
+        margin: 0;
+        padding: 0;
+      }
+      .header {
+        background-color: #007bff;
+        color: white;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 1.2em;
+      }
+      .content {
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header" class="header">← 戻る / Page {{ page_id }}</div>
+
+    <script>
+      document.getElementById("header").addEventListener("click", function () {
+        window.location.href = "{{ url_for('index') }}";
+      });
+    </script>
+
+    <div class="content">
+      <h2>ここに Page {{ page_id }} の内容を追加していきます</h2>
+    </div>
+  </body>
+</html>
