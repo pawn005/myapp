@@ -220,6 +220,56 @@
   }
 
   drawGoldenSpiral();
+  {% elif page_id == 6 %}
+<!-- 006ページ: APIデータ折れ線グラフ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="apiChart" width="800" height="600" style="display:block; margin:0 auto;"></canvas>
+
+<script>
+async function drawApiChart() {
+    try {
+        // ここを自分のAPIエンドポイントに変更
+        const res = await fetch("/api/data");
+        const data = await res.json(); // 例: [12,18,25,30,28]
+
+        const ctxChart = document.getElementById('apiChart').getContext('2d');
+        new Chart(ctxChart, {
+            type: 'line',
+            data: {
+                labels: data.map((_, i)=>i+1), // X軸: インデックス
+                datasets: [{
+                    label: 'APIデータ',
+                    data: data,
+                    borderColor: 'lime',
+                    backgroundColor: 'rgba(0,255,0,0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    title: { display: true, text: 'API データ可視化' }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Index' } },
+                    y: { title: { display: true, text: 'Value' } }
+                }
+            }
+        });
+
+    } catch(e) {
+        console.error("API取得エラー:", e);
+        ctx.fillStyle = "red";
+        ctx.font = "30px sans-serif";
+        ctx.fillText("API取得失敗", canvas.width/2 - 100, canvas.height/2);
+    }
+}
+
+drawApiChart();
+</script>
+{% endif %}
     {% endif %}
   </script>
 </body>
