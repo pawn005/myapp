@@ -31,8 +31,19 @@ def summarize():
     # 🔸 日本語T5による要約
     input_text = "要約: " + text
     inputs = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
-    summary_ids = model.generate(inputs, max_length=100, min_length=10, num_beams=4, early_stopping=True)
+    
+    # 出力制御を強化
+    summary_ids = model.generate(
+        inputs,
+        max_length=150,        # 最大文字数
+        min_length=30,         # 最低文字数
+        num_beams=4,
+        early_stopping=True,
+        length_penalty=1.2
+    )
+
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    summary = summary.replace("要約:", "").strip()  # 不要な「要約:」を削除
 
     return jsonify({"result": summary})
 
