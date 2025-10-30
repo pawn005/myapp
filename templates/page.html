@@ -212,18 +212,10 @@ drawGoldenSpiral();
 canvas.style.display = "block";
 document.getElementById("apiChart").style.display = "none";
 
-let catFact = "Loading...";
-fetch("https://catfact.ninja/fact")
-  .then(res => res.json())
-  .then(data => { catFact = data.fact; });
-
-ctx.fillStyle = "black";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-
 let x = canvas.width;
 const y = canvas.height / 2;
 
-function drawCatFact() {
+function drawCatFact(catFact) {
   ctx.fillStyle = "rgba(0,0,0,0.1)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
@@ -234,9 +226,19 @@ function drawCatFact() {
   x -= 2; // 左にスクロール
   if (x < -ctx.measureText(catFact).width) x = canvas.width;
   
-  requestAnimationFrame(drawCatFact);
+  requestAnimationFrame(() => drawCatFact(catFact));
 }
-drawCatFact();
+
+// fetch してから描画開始
+fetch("https://catfact.ninja/fact")
+  .then(res => res.json())
+  .then(data => {
+    drawCatFact(data.fact);
+  })
+  .catch(err => {
+    drawCatFact("Failed to load cat fact.");
+    console.error(err);
+  });
 {% endif %}
 </script>
 </body>
