@@ -302,6 +302,67 @@ function drawBalls() {
 // 初期ボール作成
 createBall(canvas.width/2, canvas.height/2, 10, 10, 20);
 drawBalls();
+{% elif page_id == 8 %}
+/* 008ページ: AIによる文章要約デモ */
+
+canvas.style.display = "block";
+document.getElementById("apiChart").style.display = "none";
+
+ctx.font = "24px sans-serif";
+ctx.fillStyle = "white";
+ctx.textAlign = "center";
+ctx.fillText("AI要約ページ", canvas.width/2, 100);
+
+const inputBox = document.createElement("textarea");
+inputBox.style.position = "absolute";
+inputBox.style.top = "150px";
+inputBox.style.left = "50%";
+inputBox.style.transform = "translateX(-50%)";
+inputBox.style.width = "60%";
+inputBox.style.height = "100px";
+inputBox.style.fontSize = "16px";
+inputBox.style.background = "rgba(255,255,255,0.1)";
+inputBox.style.color = "white";
+inputBox.style.border = "1px solid white";
+inputBox.placeholder = "要約したい文章を入力してください";
+document.body.appendChild(inputBox);
+
+const sendBtn = document.createElement("button");
+sendBtn.innerText = "AI要約";
+sendBtn.style.position = "absolute";
+sendBtn.style.top = "270px";
+sendBtn.style.left = "50%";
+sendBtn.style.transform = "translateX(-50%)";
+sendBtn.style.padding = "10px 20px";
+sendBtn.style.cursor = "pointer";
+document.body.appendChild(sendBtn);
+
+const resultArea = document.createElement("div");
+resultArea.style.position = "absolute";
+resultArea.style.top = "330px";
+resultArea.style.left = "50%";
+resultArea.style.transform = "translateX(-50%)";
+resultArea.style.width = "60%";
+resultArea.style.textAlign = "center";
+resultArea.style.whiteSpace = "pre-wrap";
+document.body.appendChild(resultArea);
+
+sendBtn.addEventListener("click", async () => {
+  const text = inputBox.value;
+  if (!text) {
+    resultArea.innerText = "テキストを入力してください。";
+    return;
+  }
+
+  resultArea.innerText = "AIが要約中...";
+  const res = await fetch("/summarize", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ text })
+  });
+  const data = await res.json();
+  resultArea.innerText = data.result;
+});
 {% endif %}
 </script>
 </body>
