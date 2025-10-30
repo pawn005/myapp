@@ -102,6 +102,35 @@
       }
 
       drawMock();
+      {% elif page_id == 2 %}
+  const blockSize = 40;
+  let frame = 0;
+  function drawPyramid() {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    
+    const base = 10;
+    const offsetX = canvas.width / 2;
+    const offsetY = canvas.height - 50;
+    const colorSeed = Math.floor(Date.now() / 100) % 360;
+    
+    for (let row = 0; row < base; row++) {
+      for (let col = 0; col < base-row; col++) {
+        if (frame/5 >= row) {
+          const hue = (colorSeed + row*40 + col*60) % 360;
+          ctx.fillStyle = `hsl(${hue},80%,60%)`;
+          const x = offsetX - (base-row)*blockSize/2 + col*blockSize;
+          const y = offsetY - row*blockSize;
+          ctx.fillRect(x,y,blockSize-2,blockSize-2);
+        }
+      }
+    }
+    
+    frame++;
+    if(frame > base*10) frame=0;
+    requestAnimationFrame(drawPyramid);
+  }
+  drawPyramid();
     {% endif %}
   </script>
 </body>
