@@ -46,86 +46,63 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // --- アニメーション関数群 ---
-    const animations = {
-      0: function() {
-        // 円周率アニメ
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        let step = 0;
-        const pi_digits = "14159265358979323846264338327950288419716939937510";
+    {% if page_id == 0 %}
+      // 000ページ: 円周率アニメ
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      let step = 0;
+      const pi_digits = "14159265358979323846264338327950288419716939937510";
 
-        function drawNext() {
-          ctx.fillStyle = "rgba(0,0,0,0.1)";
-          ctx.fillRect(0,0,canvas.width,canvas.height);
+      function drawPi() {
+        ctx.fillStyle = "rgba(0,0,0,0.1)";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
 
-          const digit = parseInt(pi_digits[step]);
-          const angle = digit * 36 * Math.PI / 180;
-          const length = 200;
+        const digit = parseInt(pi_digits[step]);
+        const angle = digit * 36 * Math.PI / 180;
+        const length = 200;
 
-          const x = centerX + length * Math.cos(angle);
-          const y = centerY + length * Math.sin(angle);
+        const x = centerX + length * Math.cos(angle);
+        const y = centerY + length * Math.sin(angle);
 
-          ctx.strokeStyle = "white";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(centerX, centerY);
-          ctx.lineTo(x, y);
-          ctx.stroke();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
 
-          step = (step + 1) % pi_digits.length;
-          requestAnimationFrame(drawNext);
-        }
+        step = (step + 1) % pi_digits.length;
+        requestAnimationFrame(drawPi);
+      }
 
-        drawNext();
-      },
+      drawPi();
 
-      1: function() {
-        // ピラミッドアニメ
-        const blockSize = 40;
-        const baseCount = 10;
-        let frame = 0;
+    {% elif page_id == 1 %}
+      // 001ページ: 模倣表示（単純な色ブロック）
+      const blockSize = 50;
+      let frame = 0;
 
-        function drawPyramid() {
-          ctx.fillStyle = "rgba(0,0,0,0.2)";
-          ctx.fillRect(0,0,canvas.width,canvas.height);
+      function drawMock() {
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
 
-          const offsetX = canvas.width / 2;
-          const offsetY = canvas.height - 50;
-          const colorSeed = Math.floor(Date.now() / 100) % 360;
+        const cols = Math.floor(canvas.width / blockSize);
+        const rows = Math.floor(canvas.height / blockSize);
 
-          for (let row = 0; row < baseCount; row++) {
-            const blocks = baseCount - row;
-            for (let col = 0; col < blocks; col++) {
-              if (frame / 5 >= row) {
-                const hue = (colorSeed + row*40 + col*60) % 360;
-                ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
-                const x = offsetX - (blocks*blockSize)/2 + col*blockSize;
-                const y = offsetY - row*blockSize;
-                ctx.fillRect(x, y, blockSize-2, blockSize-2);
-              }
-            }
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const hue = (frame + r*20 + c*10) % 360;
+            ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+            ctx.fillRect(c*blockSize, r*blockSize, blockSize-2, blockSize-2);
           }
-
-          frame++;
-          if(frame > baseCount*10) frame = 0;
-          requestAnimationFrame(drawPyramid);
         }
 
-        drawPyramid();
-      },
+        frame += 2;
+        requestAnimationFrame(drawMock);
+      }
 
-      // ここに page_id:2,3,... のアニメーションを追加可能
-    };
-
-    // --- page_id に応じたアニメーション実行 ---
-    if (animations.hasOwnProperty({{ page_id }})) {
-      animations[{{ page_id }}]();
-    } else {
-      ctx.fillStyle = "white";
-      ctx.font = "24px sans-serif";
-      ctx.fillText("No animation defined for this page", 50, 50);
-    }
+      drawMock();
+    {% endif %}
   </script>
 </body>
 </html>
