@@ -229,19 +229,65 @@ function drawCatFact(catFact) {
   ctx.font = "24px sans-serif";
   ctx.fillText(catFact, x, y);
   
-  x -= 2;
+  x -= 2; // 左にスクロール
   if (x < -ctx.measureText(catFact).width) x = canvas.width;
   
   requestAnimationFrame(() => drawCatFact(catFact));
 }
 
+// fetch してから描画開始
 fetch("https://catfact.ninja/fact")
   .then(res => res.json())
-  .then(data => drawCatFact(data.fact))
+  .then(data => {
+    drawCatFact(data.fact);
+  })
   .catch(err => {
     drawCatFact("Failed to load cat fact.");
     console.error(err);
   });
+
+{% elif page_id == 7 %}
+// 007ページ: 反射で色が変わるボール
+const balls = [];
+const maxBalls = 16;
+
+function createBall(x, y, vx, vy, radius) {
+    balls.push({x, y, vx, vy, radius, colorHue: Math.random()*360});
+}
+
+function drawBalls() {
+    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const newBalls = [];
+    for(let ball of balls) {
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+        if(ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+            ball.vx *= -1;
+            ball.colorHue = Math.random()*360;
+            if(balls.length + newBalls.length < maxBalls) {
+                newBalls.push({x: ball.x, y: ball.y, vx: ball.vx*(Math.random()*0.4+0.8), vy: ball.vy*(Math.random()*0.4+0.8), radius: ball.radius, colorHue: Math.random()*360});
+            }
+        }
+        if(ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+            ball.vy *= -1;
+            ball.colorHue = Math.random()*360;
+            if(balls.length + newBalls.length < maxBalls) {
+                newBalls.push({x: ball.x, y: ball.y, vx: ball.vx*(Math.random()*0.4+0.8), vy: ball.vy*(Math.random()*0.4+0.8), radius: ball.radius, colorHue: Math.random()*360});
+            }
+        }
+        ctx.fillStyle = `hsl(${ball.colorHue}, 80%, 60%)`;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+        ctx.fill();
+    }
+
+    balls.push(...newBalls);
+    requestAnimationFrame(drawBalls);
+}
+createBall(canvas.width/2, canvas.height/2, 10, 10, 20);
+drawBalls();
 
 {% elif page_id == 8 %}
 // 008ページ: AIによる文章要約
@@ -300,59 +346,97 @@ sendBtn.addEventListener("click", async () => {
     body: JSON.stringify({ text })
   });
   const data = await res.json();
-  resultArea.innerText = data.result || "要約できませんでした。"; // 修正済み
+  resultArea.innerText = data
+  resultArea.innerText = data.summary || "要約できませんでした。";
 });
+
 {% elif page_id == 9 %}
-// 009ページ: APIデータ可視化 (グラフ例)
+// 009ページ: TensorFlow.jsで画像分類
 canvas.style.display = "none";
-const chartCanvas9 = document.getElementById("apiChart");
-chartCanvas9.style.display = "block";
-const ctx9 = chartCanvas9.getContext("2d");
-chartCanvas9.width = window.innerWidth * 0.9;
-chartCanvas9.height = window.innerHeight * 0.6;
+document.getElementById("apiChart").style.display = "block";
 
-// 仮データ
-const data9 = [12, 19, 3, 5, 2, 3];
-const labels9 = ["Jan","Feb","Mar","Apr","May","Jun"];
+const fileInput = document.createElement("input");
+fileInput.type = "file";
+fileInput.accept = "image/*";
+fileInput.style.position = "absolute";
+fileInput.style.top = "50px";
+fileInput.style.left = "50%";
+fileInput.style.transform = "translateX(-50%)";
+document.body.appendChild(fileInput);
 
-function drawBarChart(ctx, data, labels) {
-  const w = ctx.canvas.width;
-  const h = ctx.canvas.height;
-  ctx.clearRect(0,0,w,h);
+const imgPreview = document.createElement("img");
+imgPreview.style.position = "absolute";
+imgPreview.style.top = "100px";
+imgPreview.style.left = "50%";
+imgPreview.style.transform = "translateX(-50%)";
+imgPreview.style.maxWidth = "300px";
+document.body.appendChild(imgPreview);
 
-  const barWidth = w / data.length * 0.6;
-  const maxVal = Math.max(...data) * 1.1;
+const resultDiv = document.createElement("div");
+resultDiv.style.position = "absolute";
+resultDiv.style.top = "420px";
+resultDiv.style.left = "50%";
+resultDiv.style.transform = "translateX(-50%)";
+resultDiv.style.color = "white";
+document.body.appendChild(resultDiv);
 
-  data.forEach((val,i)=>{
-    const x = i * w / data.length + (w/data.length - barWidth)/2;
-    const barHeight = val / maxVal * (h*0.8);
-    ctx.fillStyle = "hsl(" + i*50 + ",70%,60%)";
-    ctx.fillRect(x, h - barHeight, barWidth, barHeight);
-    ctx.fillStyle = "white";
-    ctx.fillText(labels[i], x + barWidth/2, h - 5);
-  });
-}
-drawBarChart(ctx9, data9, labels9);
+let model;
+mobilenet.load().then(m => { model = m; });
+
+fileInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    imgPreview.src = ev.target.result;
+    imgPreview.onload = async function() {
+      if (!model) {
+        resultDiv.innerText = "モデル読み込み中…";
+        return;
+      }
+      const predictions = await model.classify(imgPreview);
+      resultDiv.innerText = predictions.map(p => `${p.className}: ${(p.probability*100).toFixed(2)}%`).join("\n");
+    };
+  };
+  reader.readAsDataURL(file);
+});
+
 {% elif page_id == 10 %}
-// 010ページ: アニメーション付きテキストスクロール
-canvas.style.display = "block";
-document.getElementById("apiChart").style.display = "none";
+// 010ページ: APIグラフ描画
+canvas.style.display = "none";
+const chartCanvas = document.getElementById("apiChart");
+chartCanvas.style.display = "block";
+chartCanvas.width = window.innerWidth * 0.8;
+chartCanvas.height = 400;
+const chartCtx = chartCanvas.getContext("2d");
 
-let scrollX = canvas.width;
-const scrollText = "010ページ: ここにスクロールテキストを表示しています。";
+fetch("https://api.coindesk.com/v1/bpi/historical/close.json")
+  .then(res => res.json())
+  .then(data => {
+    const prices = data.bpi;
+    const keys = Object.keys(prices);
+    const values = Object.values(prices);
+    const maxPrice = Math.max(...values);
+    const minPrice = Math.min(...values);
+    
+    chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+    chartCtx.strokeStyle = "lime";
+    chartCtx.beginPath();
+    for (let i = 0; i < values.length; i++) {
+      const x = i * (chartCanvas.width / values.length);
+      const y = chartCanvas.height - ((values[i] - minPrice) / (maxPrice - minPrice) * chartCanvas.height);
+      if (i === 0) chartCtx.moveTo(x, y);
+      else chartCtx.lineTo(x, y);
+    }
+    chartCtx.stroke();
+  })
+  .catch(err => {
+    chartCtx.fillStyle = "white";
+    chartCtx.fillText("API取得失敗", 50, 50);
+    console.error(err);
+  });
 
-function drawScrollText() {
-  ctx.fillStyle = "rgba(0,0,0,0.1)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = "white";
-  ctx.font = "28px sans-serif";
-  ctx.fillText(scrollText, scrollX, canvas.height/2);
-  scrollX -= 3;
-  if(scrollX < -ctx.measureText(scrollText).width) scrollX = canvas.width;
-  requestAnimationFrame(drawScrollText);
-}
-drawScrollText();
 {% endif %}
-</script>
-</body> 
+</script> 
+</body>
 </html>
