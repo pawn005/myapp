@@ -207,6 +207,36 @@ function drawGoldenSpiral() {
   requestAnimationFrame(drawGoldenSpiral);
 }
 drawGoldenSpiral();
+{% elif page_id == 6 % }
+// 006ページ: Cat Fact
+canvas.style.display = "block";
+document.getElementById("apiChart").style.display = "none";
+
+let catFact = "Loading...";
+fetch("https://catfact.ninja/fact")
+  .then(res => res.json())
+  .then(data => { catFact = data.fact; });
+
+ctx.fillStyle = "black";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+let x = canvas.width;
+const y = canvas.height / 2;
+
+function drawCatFact() {
+  ctx.fillStyle = "rgba(0,0,0,0.1)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  ctx.fillStyle = "white";
+  ctx.font = "24px sans-serif";
+  ctx.fillText(catFact, x, y);
+  
+  x -= 2; // 左にスクロール
+  if (x < -ctx.measureText(catFact).width) x = canvas.width;
+  
+  requestAnimationFrame(drawCatFact);
+}
+drawCatFact();
 {% endif %}
 </script>
 </body>
