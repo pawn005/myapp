@@ -239,6 +239,38 @@ fetch("https://catfact.ninja/fact")
     drawCatFact("Failed to load cat fact.");
     console.error(err);
   });
+  {% elif page_id == 7 %}
+  // 007ページ: 枠反射カラー
+  let posX = 100, posY = 100;
+  let velX = 3, velY = 2;
+  let hue7 = 0;
+
+  function drawPage7() {
+      // 画面全体を少しずつ暗くして残像を残す
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 色を変化させる
+      ctx.fillStyle = `hsl(${hue7%360}, 80%, 60%)`;
+      ctx.beginPath();
+      ctx.arc(posX, posY, 30, 0, Math.PI*2);
+      ctx.fill();
+
+      // 移動
+      posX += velX;
+      posY += velY;
+
+      // 枠に当たったら跳ね返す
+      if(posX < 30 || posX > canvas.width-30) velX *= -1;
+      if(posY < 30 || posY > canvas.height-30) velY *= -1;
+
+      // 色の変化
+      hue7 += 2;
+
+      raf = requestAnimationFrame(drawPage7);
+  }
+
+  drawPage7();
 {% endif %}
 </script>
 </body>
