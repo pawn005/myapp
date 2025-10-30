@@ -363,6 +363,67 @@ sendBtn.addEventListener("click", async () => {
   const data = await res.json();
   resultArea.innerText = data.result;
 });
+{ % elif page_id == 9 % }
+// 009ページ: AI風ランダムアート
+canvas.style.display = "block";
+document.getElementById("apiChart").style.display = "none";
+
+const particles = [];
+const particleCount = 200;
+
+// マウス位置追跡
+let mouseX = canvas.width / 2;
+let mouseY = canvas.height / 2;
+canvas.addEventListener("mousemove", e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function createParticles() {
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      hue: Math.random() * 360
+    });
+  }
+}
+
+function drawParticles() {
+  ctx.fillStyle = "rgba(0,0,0,0.1)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  for (let p of particles) {
+    // マウスに少し引き寄せられる
+    let dx = mouseX - p.x;
+    let dy = mouseY - p.y;
+    p.vx += dx * 0.0005;
+    p.vy += dy * 0.0005;
+    
+    p.x += p.vx;
+    p.y += p.vy;
+    
+    // 画面端で跳ね返る
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    
+    // 描画
+    ctx.fillStyle = `hsl(${p.hue}, 80%, 60%)`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 色少し変化
+    p.hue += 0.5;
+  }
+  
+  requestAnimationFrame(drawParticles);
+}
+
+createParticles();
+drawParticles();
 {% endif %}
 </script>
 </body>
