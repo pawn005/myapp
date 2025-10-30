@@ -363,7 +363,7 @@ sendBtn.addEventListener("click", async () => {
   const data = await res.json();
   resultArea.innerText = data.result;
 });
-{ % elif page_id == 9 % }
+{% elif page_id == 9 %}
 // 009ページ: AI風ランダムアート
 canvas.style.display = "block";
 document.getElementById("apiChart").style.display = "none";
