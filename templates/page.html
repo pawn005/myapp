@@ -159,15 +159,15 @@
   drawLissajous();
 
 {% elif page_id == 4 %}
-  // 004ページ: フラクタルツリー
   function drawFractalTree(x1, y1, angle, depth) {
       if(depth === 0) return;
 
-      const x2 = x1 + Math.cos(angle) * depth * 10;
-      const y2 = y1 - Math.sin(angle) * depth * 10;
+      const length = depth * 15; // 長さを少し大きく
+      const x2 = x1 + Math.cos(angle) * length;
+      const y2 = y1 + Math.sin(angle) * length; // Canvas は下方向が +y
 
       ctx.strokeStyle = `hsl(${depth*30%360},70%,60%)`;
-      ctx.lineWidth = depth;
+      ctx.lineWidth = Math.max(depth,1);
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
@@ -178,11 +178,11 @@
   }
 
   function animateTree() {
-      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillStyle = "rgba(0,0,0,0.2)";
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
       const baseX = canvas.width/2;
-      const baseY = canvas.height;
+      const baseY = canvas.height - 50; // 少し下げると見やすい
       const time = Date.now() / 1000;
       drawFractalTree(baseX, baseY, -Math.PI/2 + Math.sin(time)/4, 10);
 
