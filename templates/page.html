@@ -131,6 +131,95 @@
     requestAnimationFrame(drawPyramid);
   }
   drawPyramid();
+  {% elif page_id == 3 %}
+  // 003ページ: リサジュー曲線
+  let t3 = 0;
+  function drawLissajous() {
+      ctx.fillStyle = "rgba(0,0,0,0.05)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      const A = 200;
+      const B = 150;
+      const a = 3;
+      const b = 2;
+      const delta = Math.PI/2;
+
+      const x = canvas.width/2 + A * Math.sin(a * t3 + delta);
+      const y = canvas.height/2 + B * Math.sin(b * t3);
+
+      ctx.fillStyle = `hsl(${t3*50%360},80%,60%)`;
+      ctx.beginPath();
+      ctx.arc(x,y,5,0,Math.PI*2);
+      ctx.fill();
+
+      t3 += 0.02;
+      requestAnimationFrame(drawLissajous);
+  }
+
+  drawLissajous();
+
+{% elif page_id == 4 %}
+  // 004ページ: フラクタルツリー
+  function drawFractalTree(x1, y1, angle, depth) {
+      if(depth === 0) return;
+
+      const x2 = x1 + Math.cos(angle) * depth * 10;
+      const y2 = y1 - Math.sin(angle) * depth * 10;
+
+      ctx.strokeStyle = `hsl(${depth*30%360},70%,60%)`;
+      ctx.lineWidth = depth;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      drawFractalTree(x2, y2, angle - Math.PI/6, depth - 1);
+      drawFractalTree(x2, y2, angle + Math.PI/6, depth - 1);
+  }
+
+  function animateTree() {
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      const baseX = canvas.width/2;
+      const baseY = canvas.height;
+      const time = Date.now() / 1000;
+      drawFractalTree(baseX, baseY, -Math.PI/2 + Math.sin(time)/4, 10);
+
+      requestAnimationFrame(animateTree);
+  }
+
+  animateTree();
+
+{% elif page_id == 5 %}
+  // 005ページ: 黄金比スパイラル
+  let t5 = 0;
+  function drawGoldenSpiral() {
+      ctx.fillStyle = "rgba(0,0,0,0.05)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      const phi = (1 + Math.sqrt(5))/2; // 黄金比
+      const centerX = canvas.width/2;
+      const centerY = canvas.height/2;
+
+      for(let i = 0; i < 200; i++) {
+          const angle = i * 0.3 + t5;
+          const radius = Math.pow(phi, i*0.05) * 5;
+
+          const x = centerX + radius * Math.cos(angle);
+          const y = centerY + radius * Math.sin(angle);
+
+          ctx.fillStyle = `hsl(${i*5 + t5*50 % 360},80%,60%)`;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI*2);
+          ctx.fill();
+      }
+
+      t5 += 0.02;
+      requestAnimationFrame(drawGoldenSpiral);
+  }
+
+  drawGoldenSpiral();
     {% endif %}
   </script>
 </body>
