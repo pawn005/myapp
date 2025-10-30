@@ -302,7 +302,56 @@ sendBtn.addEventListener("click", async () => {
   const data = await res.json();
   resultArea.innerText = data.result || "要約できませんでした。"; // 修正済み
 });
+{% elif page_id == 9 %}
+// 009ページ: APIデータ可視化 (グラフ例)
+canvas.style.display = "none";
+const chartCanvas9 = document.getElementById("apiChart");
+chartCanvas9.style.display = "block";
+const ctx9 = chartCanvas9.getContext("2d");
+chartCanvas9.width = window.innerWidth * 0.9;
+chartCanvas9.height = window.innerHeight * 0.6;
 
+// 仮データ
+const data9 = [12, 19, 3, 5, 2, 3];
+const labels9 = ["Jan","Feb","Mar","Apr","May","Jun"];
+
+function drawBarChart(ctx, data, labels) {
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  const barWidth = w / data.length * 0.6;
+  const maxVal = Math.max(...data) * 1.1;
+
+  data.forEach((val,i)=>{
+    const x = i * w / data.length + (w/data.length - barWidth)/2;
+    const barHeight = val / maxVal * (h*0.8);
+    ctx.fillStyle = "hsl(" + i*50 + ",70%,60%)";
+    ctx.fillRect(x, h - barHeight, barWidth, barHeight);
+    ctx.fillStyle = "white";
+    ctx.fillText(labels[i], x + barWidth/2, h - 5);
+  });
+}
+drawBarChart(ctx9, data9, labels9);
+{% elif page_id == 10 %}
+// 010ページ: アニメーション付きテキストスクロール
+canvas.style.display = "block";
+document.getElementById("apiChart").style.display = "none";
+
+let scrollX = canvas.width;
+const scrollText = "010ページ: ここにスクロールテキストを表示しています。";
+
+function drawScrollText() {
+  ctx.fillStyle = "rgba(0,0,0,0.1)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "white";
+  ctx.font = "28px sans-serif";
+  ctx.fillText(scrollText, scrollX, canvas.height/2);
+  scrollX -= 3;
+  if(scrollX < -ctx.measureText(scrollText).width) scrollX = canvas.width;
+  requestAnimationFrame(drawScrollText);
+}
+drawScrollText();
 {% endif %}
 </script>
 </body> 
