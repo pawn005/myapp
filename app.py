@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # 🔸 モデル読み込み（初回だけ数秒かかります）
 model_name = "sonoisa/t5-base-japanese"
-tokenizer = T5Tokenizer.from_pretrained(model_name)
+tokenizer = T5Tokenizer.from_pretrained(model_name, use_fast=False)
 model = T5ForConditionalGeneration.from_pretrained(model_name)
 
 @app.route('/')
@@ -26,13 +26,12 @@ def summarize():
     text = data.get("text", "")
 
     if not text:
-        return jsonify({"result": "テキストを入力してください。"})
+        return jsonify({"summary": "テキストを入力してください。"})
 
     # 🔸 日本語T5による要約
     input_text = "要約: " + text
-    inputs = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
+    inputs = tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True)
     
-    # 出力制御を強化
     summary_ids = model.generate(
         inputs,
         max_length=150,        # 最大文字数
@@ -43,9 +42,9 @@ def summarize():
     )
 
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    summary = summary.replace("要約:", "").strip()  # 不要な「要約:」を削除
+    summary = summary.replace("要約:", "").strip()
 
-    return jsonify({"result": summary})
+    return jsonify({"summary": summary})
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

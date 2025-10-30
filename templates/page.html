@@ -402,7 +402,7 @@ fileInput.addEventListener("change", async (e) => {
 });
 
 {% elif page_id == 10 %}
-// 010ページ: APIグラフ描画（CORS回避版）
+<script>
 canvas.style.display = "none";
 const chartCanvas = document.getElementById("apiChart");
 chartCanvas.style.display = "block";
@@ -410,14 +410,11 @@ chartCanvas.width = window.innerWidth * 0.8;
 chartCanvas.height = 400;
 const chartCtx = chartCanvas.getContext("2d");
 
-// プロキシ経由でAPI取得
-const apiUrl = "https://api.coindesk.com/v1/bpi/historical/close.json";
-const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(apiUrl);
-
-fetch(proxyUrl)
+// サーバー経由でAPI取得
+fetch("/bpi")  // Flask側で /bpi を実装しておく
   .then(res => res.json())
   .then(data => {
-    const prices = JSON.parse(data.contents).bpi;
+    const prices = data.bpi;
     const keys = Object.keys(prices);
     const values = Object.values(prices);
     const maxPrice = Math.max(...values);
@@ -425,6 +422,7 @@ fetch(proxyUrl)
 
     chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
     chartCtx.strokeStyle = "lime";
+    chartCtx.lineWidth = 2;
     chartCtx.beginPath();
     for (let i = 0; i < values.length; i++) {
       const x = i * (chartCanvas.width / values.length);
@@ -436,9 +434,10 @@ fetch(proxyUrl)
   })
   .catch(err => {
     chartCtx.fillStyle = "white";
-    chartCtx.fillText("API取得失敗（ネットワークかCORS問題）", 50, 50);
+    chartCtx.fillText("API取得失敗（サーバー経由で確認）", 50, 50);
     console.error(err);
   });
+</script>
 {% endif %}
 </script> 
 </body> 
