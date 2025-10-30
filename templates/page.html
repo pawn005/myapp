@@ -1,230 +1,203 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>{{ "%03d"|format(page_id) }}</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background-color: black;
-      color: white;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      font-size: 1.2em;
-      cursor: pointer;
-    }
-    #backBtn {
-      color: white;
-      margin-right: 10px;
-    }
-    #piCanvas {
-      display: block;
-      margin: 0 auto;
-      background-color: black;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>{{ "{:03d}".format(page_id) }}</title>
+<style>
+body { margin:0; font-family:sans-serif; background:black; color:white; }
+.header { display:flex; align-items:center; padding:10px; font-size:1.2em; cursor:pointer; }
+#backBtn { color:white; margin-right:10px; }
+canvas { display:block; margin:0 auto; background:black; }
+</style>
 </head>
 <body>
-  <div class="header">
-    <span id="backBtn">BACK</span>
-    <span class="page-id">{{ "%03d"|format(page_id) }}</span>
-  </div>
+<div class="header">
+  <span id="backBtn">BACK</span>
+  <span class="page-id">{{ "{:03d}".format(page_id) }}</span>
+</div>
 
-  <canvas id="piCanvas"></canvas>
+<canvas id="piCanvas"></canvas>
 
-  <script>
-    document.getElementById("backBtn").addEventListener("click", function() {
-      window.location.href = "{{ url_for('index') }}";
-    });
+<script>
+document.getElementById("backBtn").addEventListener("click", function() {
+  window.location.href = "{{ url_for('index') }}";
+});
 
-    const canvas = document.getElementById("piCanvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+const canvas = document.getElementById("piCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    {% if page_id == 0 %}
-      // 000ページ: 円周率アニメ
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      let step = 0;
-      const pi_digits = "14159265358979323846264338327950288419716939937510";
+{% if page_id == 0 %}
+// 000ページ: 円周率アニメ
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
+let step = 0;
+const pi_digits = "14159265358979323846264338327950288419716939937510";
 
-      function drawPi() {
-        ctx.fillStyle = "rgba(0,0,0,0.1)";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+function drawPi() {
+  ctx.fillStyle = "rgba(0,0,0,0.1)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-        const digit = parseInt(pi_digits[step]);
-        const angle = digit * 36 * Math.PI / 180;
-        const length = 200;
+  const digit = parseInt(pi_digits[step]);
+  const angle = digit * 36 * Math.PI / 180;
+  const length = 200;
 
-        const x = centerX + length * Math.cos(angle);
-        const y = centerY + length * Math.sin(angle);
+  const x = centerX + length * Math.cos(angle);
+  const y = centerY + length * Math.sin(angle);
 
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY);
+  ctx.lineTo(x, y);
+  ctx.stroke();
 
-        step = (step + 1) % pi_digits.length;
-        requestAnimationFrame(drawPi);
-      }
+  step = (step + 1) % pi_digits.length;
+  requestAnimationFrame(drawPi);
+}
+drawPi();
 
-      drawPi();
+{% elif page_id == 1 %}
+// 001ページ: 模倣表示（単純な色ブロック）
+const blockSize = 50;
+let frame = 0;
 
-    {% elif page_id == 1 %}
-      // 001ページ: 模倣表示（単純な色ブロック）
-      const blockSize = 50;
-      let frame = 0;
+function drawMock() {
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      function drawMock() {
-        ctx.fillStyle = "rgba(0,0,0,0.2)";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+  const cols = Math.floor(canvas.width / blockSize);
+  const rows = Math.floor(canvas.height / blockSize);
 
-        const cols = Math.floor(canvas.width / blockSize);
-        const rows = Math.floor(canvas.height / blockSize);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const hue = (frame + r*20 + c*10) % 360;
+      ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+      ctx.fillRect(c*blockSize, r*blockSize, blockSize-2, blockSize-2);
+    }
+  }
 
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const hue = (frame + r*20 + c*10) % 360;
-            ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
-            ctx.fillRect(c*blockSize, r*blockSize, blockSize-2, blockSize-2);
-          }
-        }
+  frame += 2;
+  requestAnimationFrame(drawMock);
+}
+drawMock();
 
-        frame += 2;
-        requestAnimationFrame(drawMock);
-      }
+{% elif page_id == 2 %}
+// 002ページ: ピラミッド
+const blockSize2 = 40;
+let frame2 = 0;
+function drawPyramid() {
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      drawMock();
-      {% elif page_id == 2 %}
-  const blockSize = 40;
-  let frame = 0;
-  function drawPyramid() {
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    
-    const base = 10;
-    const offsetX = canvas.width / 2;
-    const offsetY = canvas.height - 50;
-    const colorSeed = Math.floor(Date.now() / 100) % 360;
-    
-    for (let row = 0; row < base; row++) {
-      for (let col = 0; col < base-row; col++) {
-        if (frame/5 >= row) {
-          const hue = (colorSeed + row*40 + col*60) % 360;
-          ctx.fillStyle = `hsl(${hue},80%,60%)`;
-          const x = offsetX - (base-row)*blockSize/2 + col*blockSize;
-          const y = offsetY - row*blockSize;
-          ctx.fillRect(x,y,blockSize-2,blockSize-2);
-        }
+  const base = 10;
+  const offsetX = canvas.width / 2;
+  const offsetY = canvas.height - 50;
+  const colorSeed = Math.floor(Date.now() / 100) % 360;
+
+  for (let row = 0; row < base; row++) {
+    for (let col = 0; col < base-row; col++) {
+      if (frame2/5 >= row) {
+        const hue = (colorSeed + row*40 + col*60) % 360;
+        ctx.fillStyle = `hsl(${hue},80%,60%)`;
+        const x = offsetX - (base-row)*blockSize2/2 + col*blockSize2;
+        const y = offsetY - row*blockSize2;
+        ctx.fillRect(x,y,blockSize2-2,blockSize2-2);
       }
     }
-    
-    frame++;
-    if(frame > base*10) frame=0;
-    requestAnimationFrame(drawPyramid);
-  }
-  drawPyramid();
-  {% elif page_id == 3 %}
-  // 003ページ: リサジュー曲線
-  let t3 = 0;
-  function drawLissajous() {
-      ctx.fillStyle = "rgba(0,0,0,0.05)";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      const A = 200;
-      const B = 150;
-      const a = 3;
-      const b = 2;
-      const delta = Math.PI/2;
-
-      const x = canvas.width/2 + A * Math.sin(a * t3 + delta);
-      const y = canvas.height/2 + B * Math.sin(b * t3);
-
-      ctx.fillStyle = `hsl(${t3*50%360},80%,60%)`;
-      ctx.beginPath();
-      ctx.arc(x,y,5,0,Math.PI*2);
-      ctx.fill();
-
-      t3 += 0.02;
-      requestAnimationFrame(drawLissajous);
   }
 
-  drawLissajous();
+  frame2++;
+  if(frame2 > base*10) frame2=0;
+  requestAnimationFrame(drawPyramid);
+}
+drawPyramid();
+
+{% elif page_id == 3 %}
+// 003ページ: リサジュー曲線
+let t3 = 0;
+function drawLissajous() {
+  ctx.fillStyle = "rgba(0,0,0,0.05)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const A = 200;
+  const B = 150;
+  const a = 3;
+  const b = 2;
+  const delta = Math.PI/2;
+
+  const x = canvas.width/2 + A * Math.sin(a * t3 + delta);
+  const y = canvas.height/2 + B * Math.sin(b * t3);
+
+  ctx.fillStyle = `hsl(${t3*50%360},80%,60%)`;
+  ctx.beginPath();
+  ctx.arc(x,y,5,0,Math.PI*2);
+  ctx.fill();
+
+  t3 += 0.02;
+  requestAnimationFrame(drawLissajous);
+}
+drawLissajous();
 
 {% elif page_id == 4 %}
-  function drawFractalTree(x1, y1, angle, depth) {
-      if(depth === 0) return;
+// 004ページ: フラクタルツリー
+function drawFractalTree(x1, y1, angle, depth) {
+  if(depth === 0) return;
+  const length = depth * 15;
+  const x2 = x1 + Math.cos(angle) * length;
+  const y2 = y1 + Math.sin(angle) * length;
+  ctx.strokeStyle = `hsl(${depth*30%360},70%,60%)`;
+  ctx.lineWidth = Math.max(depth,1);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  drawFractalTree(x2, y2, angle - Math.PI/6, depth - 1);
+  drawFractalTree(x2, y2, angle + Math.PI/6, depth - 1);
+}
 
-      const length = depth * 15; // 長さを少し大きく
-      const x2 = x1 + Math.cos(angle) * length;
-      const y2 = y1 + Math.sin(angle) * length; // Canvas は下方向が +y
-
-      ctx.strokeStyle = `hsl(${depth*30%360},70%,60%)`;
-      ctx.lineWidth = Math.max(depth,1);
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-
-      drawFractalTree(x2, y2, angle - Math.PI/6, depth - 1);
-      drawFractalTree(x2, y2, angle + Math.PI/6, depth - 1);
-  }
-
-  function animateTree() {
-      ctx.fillStyle = "rgba(0,0,0,0.2)";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      const baseX = canvas.width/2;
-      const baseY = canvas.height - 50; // 少し下げると見やすい
-      const time = Date.now() / 1000;
-      drawFractalTree(baseX, baseY, -Math.PI/2 + Math.sin(time)/4, 10);
-
-      requestAnimationFrame(animateTree);
-  }
-
-  animateTree();
+function animateTree() {
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const baseX = canvas.width/2;
+  const baseY = canvas.height - 50;
+  const time = Date.now() / 1000;
+  drawFractalTree(baseX, baseY, -Math.PI/2 + Math.sin(time)/4, 10);
+  requestAnimationFrame(animateTree);
+}
+animateTree();
 
 {% elif page_id == 5 %}
-  // 005ページ: 黄金比スパイラル
-  let t5 = 0;
-  function drawGoldenSpiral() {
-      ctx.fillStyle = "rgba(0,0,0,0.05)";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      const phi = (1 + Math.sqrt(5))/2; // 黄金比
-      const centerX = canvas.width/2;
-      const centerY = canvas.height/2;
-
-      for(let i = 0; i < 200; i++) {
-          const angle = i * 0.3 + t5;
-          const radius = Math.pow(phi, i*0.05) * 5;
-
-          const x = centerX + radius * Math.cos(angle);
-          const y = centerY + radius * Math.sin(angle);
-
-          ctx.fillStyle = `hsl(${i*5 + t5*50 % 360},80%,60%)`;
-          ctx.beginPath();
-          ctx.arc(x, y, 4, 0, Math.PI*2);
-          ctx.fill();
-      }
-
-      t5 += 0.02;
-      requestAnimationFrame(drawGoldenSpiral);
+// 005ページ: 黄金比スパイラル
+let t5 = 0;
+function drawGoldenSpiral() {
+  ctx.fillStyle = "rgba(0,0,0,0.05)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const phi = (1 + Math.sqrt(5))/2;
+  const centerX = canvas.width/2;
+  const centerY = canvas.height/2;
+  for(let i = 0; i < 200; i++) {
+    const angle = i * 0.3 + t5;
+    const radius = Math.pow(phi, i*0.05) * 5;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    ctx.fillStyle = `hsl(${i*5 + t5*50 % 360},80%,60%)`;
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI*2);
+    ctx.fill();
   }
+  t5 += 0.02;
+  requestAnimationFrame(drawGoldenSpiral);
+}
+drawGoldenSpiral();
+{% endif %}
+</script>
 
-  drawGoldenSpiral();
-  {% elif page_id == 6 %}
+{% if page_id == 6 %}
 <!-- 006ページ: 東京23区の過去24時間気温 -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <canvas id="apiChart" width="900" height="600" style="display:block; margin:0 auto;"></canvas>
-
 <script>
 // 東京23区の緯度経度リスト
 const wards = [
@@ -311,7 +284,5 @@ async function drawWardsChart() {
 drawWardsChart();
 </script>
 {% endif %}
-    {% endif %}
-  </script>
 </body>
 </html>
