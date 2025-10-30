@@ -424,6 +424,47 @@ function drawParticles() {
 
 createParticles();
 drawParticles();
+{% elif page_id == 10 %}
+// 010ページ: 写真判定（TensorFlow.js）
+canvas.style.display = "block";
+document.getElementById("apiChart").style.display = "none";
+
+const imgInput = document.createElement("input");
+imgInput.type = "file";
+imgInput.accept = "image/*";
+document.body.appendChild(imgInput);
+
+let model;
+(async () => {
+  model = await mobilenet.load();
+  console.log("モデル読み込み完了");
+})();
+
+imgInput.addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const img = new Image();
+    img.onload = async () => {
+      // Canvas に描画
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      
+      // AI 判定
+      const predictions = await model.classify(img);
+      ctx.fillStyle = "white";
+      ctx.font = "20px sans-serif";
+      ctx.fillText(`${predictions[0].className} (${(predictions[0].probability*100).toFixed(1)}%)`, 10, 30);
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 {% endif %}
 </script>
 </body>
