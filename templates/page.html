@@ -1,64 +1,63 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <title>{{ "%03d"|format(page_id) }}</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: sans-serif;
-        background-color: black;
-        color: white;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ "%03d"|format(page_id) }}</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: black;
+      color: white;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    #backBtn {
+      color: white;
+      margin-right: 10px;
+    }
+    #piCanvas {
+      display: block;
+      margin: 0 auto;
+      background-color: black;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span id="backBtn">BACK</span>
+    <span class="page-id">{{ "%03d"|format(page_id) }}</span>
+  </div>
 
-      .header {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        font-size: 1.2em;
-        cursor: pointer;
-      }
+  <canvas id="piCanvas"></canvas>
 
-      #backBtn {
-        color: white;
-        margin-right: 10px;
-      }
+  <script>
+    document.getElementById("backBtn").addEventListener("click", function() {
+      window.location.href = "{{ url_for('index') }}";
+    });
 
-      #piCanvas {
-        display: block;
-        margin: 0 auto;
-        background-color: black;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <span id="backBtn">BACK</span>
-      <span class="page-id">{{ "%03d"|format(page_id) }}</span>
-    </div>
+    const canvas = document.getElementById("piCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    <canvas id="piCanvas"></canvas>
-
-    <script>
-      document.getElementById("backBtn").addEventListener("click", function() {
-        window.location.href = "{{ url_for('index') }}";
-      });
-
-      const canvas = document.getElementById("piCanvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      {% if page_id == 0 %}
-        // ---- page 000: 円周率の線アニメーション ----
+    // --- アニメーション関数群 ---
+    const animations = {
+      0: function() {
+        // 円周率アニメ
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         let step = 0;
         const pi_digits = "14159265358979323846264338327950288419716939937510";
 
         function drawNext() {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "rgba(0,0,0,0.1)";
+          ctx.fillRect(0,0,canvas.width,canvas.height);
 
           const digit = parseInt(pi_digits[step]);
           const angle = digit * 36 * Math.PI / 180;
@@ -79,48 +78,54 @@
         }
 
         drawNext();
-      {% elif page_id == 1 %}
-        // ---- page 001: for文 + if文で作るピラミッドアニメーション ----
+      },
 
+      1: function() {
+        // ピラミッドアニメ
         const blockSize = 40;
         const baseCount = 10;
         let frame = 0;
 
         function drawPyramid() {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "rgba(0,0,0,0.2)";
+          ctx.fillRect(0,0,canvas.width,canvas.height);
 
-          let offsetX = canvas.width / 2;
-          let offsetY = canvas.height - 50;
-          let colorSeed = Math.floor(Date.now() / 100) % 360; // 色の変化
+          const offsetX = canvas.width / 2;
+          const offsetY = canvas.height - 50;
+          const colorSeed = Math.floor(Date.now() / 100) % 360;
 
-          // 段ごとにブロックを描画
           for (let row = 0; row < baseCount; row++) {
-            let blocks = baseCount - row;
+            const blocks = baseCount - row;
             for (let col = 0; col < blocks; col++) {
-              // 段ごとのアニメーション: 徐々に積み上がる
               if (frame / 5 >= row) {
-                const hue = (colorSeed + (row * 40 + col * 60)) % 360;
+                const hue = (colorSeed + row*40 + col*60) % 360;
                 ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
-                const x = offsetX - (blocks * blockSize) / 2 + col * blockSize;
-                const y = offsetY - row * blockSize;
-                ctx.fillRect(x, y, blockSize - 2, blockSize - 2);
+                const x = offsetX - (blocks*blockSize)/2 + col*blockSize;
+                const y = offsetY - row*blockSize;
+                ctx.fillRect(x, y, blockSize-2, blockSize-2);
               }
             }
           }
 
           frame++;
-
-          // 全部積み上がったらリセット
-          if (frame > baseCount * 10) {
-            frame = 0;
-          }
-
+          if(frame > baseCount*10) frame = 0;
           requestAnimationFrame(drawPyramid);
         }
 
         drawPyramid();
-      {% endif %}
-    </script>
-  </body>
+      },
+
+      // ここに page_id:2,3,... のアニメーションを追加可能
+    };
+
+    // --- page_id に応じたアニメーション実行 ---
+    if (animations.hasOwnProperty({{ page_id }})) {
+      animations[{{ page_id }}]();
+    } else {
+      ctx.fillStyle = "white";
+      ctx.font = "24px sans-serif";
+      ctx.fillText("No animation defined for this page", 50, 50);
+    }
+  </script>
+</body>
 </html>
