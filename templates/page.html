@@ -207,59 +207,6 @@ function drawGoldenSpiral() {
   requestAnimationFrame(drawGoldenSpiral);
 }
 drawGoldenSpiral();
-
-{% elif page_id == 6 %}
-<canvas id="apiChart" width="900" height="600" style="display:block; margin:0 auto; border:1px solid white;"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const wards = [
-    { name: "千代田区", lat: 35.6938, lon: 139.753 },
-    { name: "中央区", lat: 35.6717, lon: 139.768 },
-    { name: "港区", lat: 35.6581, lon: 139.7516 }
-  ];
-  
-  function getColor(i, total) { return `hsl(${i*360/total},80%,60%)`; }
-  
-  async function fetchWardData(ward) {
-    try {
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${ward.lat}&longitude=${ward.lon}&hourly=temperature_2m`);
-      const json = await res.json();
-      return json.hourly.temperature_2m.slice(0, 24);
-    } catch (e) { return Array(24).fill(null); }
-  }
-  
-  async function drawWardsChart() {
-    const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2,'0')}:00`);
-    const datasets = [];
-    for (let i = 0; i < wards.length; i++) {
-      const data = await fetchWardData(wards[i]);
-      datasets.push({
-        label: wards[i].name,
-        data: data,
-        borderColor: getColor(i, wards.length),
-        backgroundColor: "transparent",
-        fill: false,
-        tension: 0.3
-      });
-    }
-    const ctx = document.getElementById('apiChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        plugins: {
-          title: { display: true, text: "東京23区の過去24時間気温（テスト）" },
-          legend: { position: 'right', labels: { boxWidth: 12, padding: 4, font: { size: 12 } } }
-        },
-        interaction: { mode: 'nearest', intersect: false },
-        scales: { x: { title: { display: true, text: "時間" } }, y: { title: { display: true, text: "℃" } } }
-      }
-    });
-  }
-  
-  drawWardsChart();
-</script>
 {% endif %}
 </body>
 </html>
