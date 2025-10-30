@@ -400,43 +400,7 @@ fileInput.addEventListener("change", async (e) => {
   };
   reader.readAsDataURL(file);
 });
-
-{% elif page_id == 10 %}
-// 010ページ: APIグラフ描画
-canvas.style.display = "none";
-const chartCanvas = document.getElementById("apiChart");
-chartCanvas.style.display = "block";
-chartCanvas.width = window.innerWidth * 0.8;
-chartCanvas.height = 400;
-const chartCtx = chartCanvas.getContext("2d");
-
-fetch("https://api.coindesk.com/v1/bpi/historical/close.json")
-  .then(res => res.json())
-  .then(data => {
-    const prices = data.bpi;
-    const keys = Object.keys(prices);
-    const values = Object.values(prices);
-    const maxPrice = Math.max(...values);
-    const minPrice = Math.min(...values);
-    
-    chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-    chartCtx.strokeStyle = "lime";
-    chartCtx.beginPath();
-    for (let i = 0; i < values.length; i++) {
-      const x = i * (chartCanvas.width / values.length);
-      const y = chartCanvas.height - ((values[i] - minPrice) / (maxPrice - minPrice) * chartCanvas.height);
-      if (i === 0) chartCtx.moveTo(x, y);
-      else chartCtx.lineTo(x, y);
-    }
-    chartCtx.stroke();
-  })
-  .catch(err => {
-    chartCtx.fillStyle = "white";
-    chartCtx.fillText("API取得失敗", 50, 50);
-    console.error(err);
-  });
-
-{% endif %}
+% endif %}
 </script> 
 </body>
 </html>
