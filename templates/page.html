@@ -4,11 +4,16 @@
 <meta charset="UTF-8" />
 <title>{{ "{:03d}".format(page_id) }}</title>
 <style>
-body { margin:0; font-family:sans-serif; background:black; color:white; }
+body { margin:0; font-family:sans-serif; background:black; color:white; overflow:hidden; }
 .header { display:flex; align-items:center; padding:10px; font-size:1.2em; cursor:pointer; }
 #backBtn { color:white; margin-right:10px; }
 canvas { display:block; margin:0 auto; background:black; }
+textarea, button, input { font-family: sans-serif; }
 </style>
+
+<!-- TensorFlow.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 </head>
 <body>
 <div class="header">
@@ -207,6 +212,7 @@ function drawGoldenSpiral() {
   requestAnimationFrame(drawGoldenSpiral);
 }
 drawGoldenSpiral();
+
 {% elif page_id == 6 %}
 // 006ページ: Cat Fact
 canvas.style.display = "block";
@@ -239,8 +245,9 @@ fetch("https://catfact.ninja/fact")
     drawCatFact("Failed to load cat fact.");
     console.error(err);
   });
-  {% elif page_id == 7 %}
-// 007ページ: 反射で色が変わるボール（ボール上限16）
+
+{% elif page_id == 7 %}
+// 007ページ: 反射で色が変わるボール
 const balls = [];
 const maxBalls = 16;
 
@@ -256,38 +263,20 @@ function drawBalls() {
     for(let ball of balls) {
         ball.x += ball.vx;
         ball.y += ball.vy;
-
-        // 反射チェック
         if(ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
             ball.vx *= -1;
             ball.colorHue = Math.random()*360;
             if(balls.length + newBalls.length < maxBalls) {
-                // 反射時にボールを増やす（角度微妙に変化）
-                newBalls.push({
-                    x: ball.x,
-                    y: ball.y,
-                    vx: ball.vx * (Math.random()*0.4 + 0.8),
-                    vy: ball.vy * (Math.random()*0.4 + 0.8),
-                    radius: ball.radius,
-                    colorHue: Math.random()*360
-                });
+                newBalls.push({x: ball.x, y: ball.y, vx: ball.vx*(Math.random()*0.4+0.8), vy: ball.vy*(Math.random()*0.4+0.8), radius: ball.radius, colorHue: Math.random()*360});
             }
         }
         if(ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
             ball.vy *= -1;
             ball.colorHue = Math.random()*360;
             if(balls.length + newBalls.length < maxBalls) {
-                newBalls.push({
-                    x: ball.x,
-                    y: ball.y,
-                    vx: ball.vx * (Math.random()*0.4 + 0.8),
-                    vy: ball.vy * (Math.random()*0.4 + 0.8),
-                    radius: ball.radius,
-                    colorHue: Math.random()*360
-                });
+                newBalls.push({x: ball.x, y: ball.y, vx: ball.vx*(Math.random()*0.4+0.8), vy: ball.vy*(Math.random()*0.4+0.8), radius: ball.radius, colorHue: Math.random()*360});
             }
         }
-
         ctx.fillStyle = `hsl(${ball.colorHue}, 80%, 60%)`;
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
@@ -295,16 +284,13 @@ function drawBalls() {
     }
 
     balls.push(...newBalls);
-
     requestAnimationFrame(drawBalls);
 }
-
-// 初期ボール作成
 createBall(canvas.width/2, canvas.height/2, 10, 10, 20);
 drawBalls();
-{% elif page_id == 8 %}
-/* 008ページ: AIによる文章要約デモ */
 
+{% elif page_id == 8 %}
+// 008ページ: AIによる文章要約
 canvas.style.display = "block";
 document.getElementById("apiChart").style.display = "none";
 
@@ -353,7 +339,6 @@ sendBtn.addEventListener("click", async () => {
     resultArea.innerText = "テキストを入力してください。";
     return;
   }
-
   resultArea.innerText = "AIが要約中...";
   const res = await fetch("/summarize", {
     method: "POST",
@@ -361,111 +346,97 @@ sendBtn.addEventListener("click", async () => {
     body: JSON.stringify({ text })
   });
   const data = await res.json();
-  resultArea.innerText = data.result;
+  resultArea.innerText = data
+  resultArea.innerText = data.summary || "要約できませんでした。";
 });
+
 {% elif page_id == 9 %}
-// 009ページ: AI風ランダムアート
-canvas.style.display = "block";
-document.getElementById("apiChart").style.display = "none";
+// 009ページ: TensorFlow.jsで画像分類
+canvas.style.display = "none";
+document.getElementById("apiChart").style.display = "block";
 
-const particles = [];
-const particleCount = 200;
+const fileInput = document.createElement("input");
+fileInput.type = "file";
+fileInput.accept = "image/*";
+fileInput.style.position = "absolute";
+fileInput.style.top = "50px";
+fileInput.style.left = "50%";
+fileInput.style.transform = "translateX(-50%)";
+document.body.appendChild(fileInput);
 
-// マウス位置追跡
-let mouseX = canvas.width / 2;
-let mouseY = canvas.height / 2;
-canvas.addEventListener("mousemove", e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
+const imgPreview = document.createElement("img");
+imgPreview.style.position = "absolute";
+imgPreview.style.top = "100px";
+imgPreview.style.left = "50%";
+imgPreview.style.transform = "translateX(-50%)";
+imgPreview.style.maxWidth = "300px";
+document.body.appendChild(imgPreview);
 
-function createParticles() {
-  for (let i = 0; i < particleCount; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 2,
-      vy: (Math.random() - 0.5) * 2,
-      hue: Math.random() * 360
-    });
-  }
-}
-
-function drawParticles() {
-  ctx.fillStyle = "rgba(0,0,0,0.1)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  for (let p of particles) {
-    // マウスに少し引き寄せられる
-    let dx = mouseX - p.x;
-    let dy = mouseY - p.y;
-    p.vx += dx * 0.0005;
-    p.vy += dy * 0.0005;
-    
-    p.x += p.vx;
-    p.y += p.vy;
-    
-    // 画面端で跳ね返る
-    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-    
-    // 描画
-    ctx.fillStyle = `hsl(${p.hue}, 80%, 60%)`;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 色少し変化
-    p.hue += 0.5;
-  }
-  
-  requestAnimationFrame(drawParticles);
-}
-
-createParticles();
-drawParticles();
-{% elif page_id == 10 %}
-// 010ページ: 写真判定（TensorFlow.js）
-canvas.style.display = "block";
-document.getElementById("apiChart").style.display = "none";
-
-const imgInput = document.createElement("input");
-imgInput.type = "file";
-imgInput.accept = "image/*";
-document.body.appendChild(imgInput);
+const resultDiv = document.createElement("div");
+resultDiv.style.position = "absolute";
+resultDiv.style.top = "420px";
+resultDiv.style.left = "50%";
+resultDiv.style.transform = "translateX(-50%)";
+resultDiv.style.color = "white";
+document.body.appendChild(resultDiv);
 
 let model;
-(async () => {
-  model = await mobilenet.load();
-  console.log("モデル読み込み完了");
-})();
+mobilenet.load().then(m => { model = m; });
 
-imgInput.addEventListener("change", e => {
+fileInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  
   const reader = new FileReader();
-  reader.onload = evt => {
-    const img = new Image();
-    img.onload = async () => {
-      // Canvas に描画
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-      const w = img.width * scale;
-      const h = img.height * scale;
-      ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
-      
-      // AI 判定
-      const predictions = await model.classify(img);
-      ctx.fillStyle = "white";
-      ctx.font = "20px sans-serif";
-      ctx.fillText(`${predictions[0].className} (${(predictions[0].probability*100).toFixed(1)}%)`, 10, 30);
+  reader.onload = function(ev) {
+    imgPreview.src = ev.target.result;
+    imgPreview.onload = async function() {
+      if (!model) {
+        resultDiv.innerText = "モデル読み込み中…";
+        return;
+      }
+      const predictions = await model.classify(imgPreview);
+      resultDiv.innerText = predictions.map(p => `${p.className}: ${(p.probability*100).toFixed(2)}%`).join("\n");
     };
-    img.src = evt.target.result;
   };
   reader.readAsDataURL(file);
 });
+
+{% elif page_id == 10 %}
+// 010ページ: APIグラフ描画
+canvas.style.display = "none";
+const chartCanvas = document.getElementById("apiChart");
+chartCanvas.style.display = "block";
+chartCanvas.width = window.innerWidth * 0.8;
+chartCanvas.height = 400;
+const chartCtx = chartCanvas.getContext("2d");
+
+fetch("https://api.coindesk.com/v1/bpi/historical/close.json")
+  .then(res => res.json())
+  .then(data => {
+    const prices = data.bpi;
+    const keys = Object.keys(prices);
+    const values = Object.values(prices);
+    const maxPrice = Math.max(...values);
+    const minPrice = Math.min(...values);
+    
+    chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+    chartCtx.strokeStyle = "lime";
+    chartCtx.beginPath();
+    for (let i = 0; i < values.length; i++) {
+      const x = i * (chartCanvas.width / values.length);
+      const y = chartCanvas.height - ((values[i] - minPrice) / (maxPrice - minPrice) * chartCanvas.height);
+      if (i === 0) chartCtx.moveTo(x, y);
+      else chartCtx.lineTo(x, y);
+    }
+    chartCtx.stroke();
+  })
+  .catch(err => {
+    chartCtx.fillStyle = "white";
+    chartCtx.fillText("API取得失敗", 50, 50);
+    console.error(err);
+  });
+
 {% endif %}
-</script>
-</body>
+</script> 
+</body> 
 </html>
