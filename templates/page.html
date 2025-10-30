@@ -207,6 +207,82 @@ function drawGoldenSpiral() {
   requestAnimationFrame(drawGoldenSpiral);
 }
 drawGoldenSpiral();
+
+{% elif page_id == 6 %}
+// 006ページ: 東京23区の過去24時間気温
+canvas.style.display = "none";
+const apiCanvas = document.getElementById("apiChart");
+apiCanvas.style.display = "block";
+apiCanvas.width = window.innerWidth;
+apiCanvas.height = window.innerHeight;
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const wards = [
+  {name:"千代田区", lat:35.6938, lon:139.753},
+  {name:"中央区", lat:35.6717, lon:139.768},
+  {name:"港区", lat:35.6581, lon:139.7516},
+  {name:"新宿区", lat:35.6938, lon:139.7034},
+  {name:"文京区", lat:35.7081, lon:139.7528},
+  {name:"台東区", lat:35.7138, lon:139.78},
+  {name:"墨田区", lat:35.7100, lon:139.8025},
+  {name:"江東区", lat:35.6735, lon:139.8172},
+  {name:"品川区", lat:35.6094, lon:139.7306},
+  {name:"目黒区", lat:35.6411, lon:139.6982},
+  {name:"大田区", lat:35.5613, lon:139.716},
+  {name:"世田谷区", lat:35.6467, lon:139.653},
+  {name:"渋谷区", lat:35.6628, lon:139.7034},
+  {name:"中野区", lat:35.7074, lon:139.665},
+  {name:"杉並区", lat:35.6999, lon:139.6381},
+  {name:"豊島区", lat:35.7326, lon:139.7171},
+  {name:"北区", lat:35.7527, lon:139.7332},
+  {name:"荒川区", lat:35.736, lon:139.7831},
+  {name:"板橋区", lat:35.7513, lon:139.7108},
+  {name:"練馬区", lat:35.7353, lon:139.6521},
+  {name:"足立区", lat:35.7805, lon:139.8041},
+  {name:"葛飾区", lat:35.7509, lon:139.8478},
+  {name:"江戸川区", lat:35.6781, lon:139.8893}
+];
+
+function getColor(i, total) { return `hsl(${i*360/total}, 80%, 60%)`; }
+
+async function drawWardsChart() {
+  const labels = [];
+  const datasets = [];
+
+  for(let i=0;i<wards.length;i++){
+    const ward = wards[i];
+    try{
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${ward.lat}&longitude=${ward.lon}&hourly=temperature_2m`);
+      const json = await res.json();
+      const data = json.hourly.temperature_2m.slice(0,24);
+
+      if(labels.length===0) labels.push(...json.hourly.time.slice(0,24).map(t=>t.split("T")[1]));
+
+      datasets.push({
+        label: ward.name,
+        data: data,
+        borderColor: getColor(i, wards.length),
+        backgroundColor:"transparent",
+        fill:false,
+        tension:0.3
+      });
+
+    }catch(e){ console.error(`${ward.name} API取得エラー:`, e); }
+  }
+
+  const ctxChart = apiCanvas.getContext('2d');
+  new Chart(ctxChart, { type:'line', data:{labels,datasets}, options:{
+    responsive:true,
+    plugins:{ title:{display:true,text:"東京23区の過去24時間気温"},
+              legend:{position:'right', labels:{boxWidth:12, padding:4, font:{size:12}}}},
+    interaction:{mode:'nearest',intersect:false},
+    scales:{ x:{title:{display:true,text:"時間"}}, y:{title:{display:true,text:"℃"}}}
+  }});
+}
+
+drawWardsChart();
 {% endif %}
+</script>
 </body>
 </html>
