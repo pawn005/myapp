@@ -239,39 +239,67 @@ fetch("https://catfact.ninja/fact")
     drawCatFact("Failed to load cat fact.");
     console.error(err);
   });
-  {% elif page_id == 7 %}
-  // 007ページ: 枠反射で色が変わるボール
-  let posX = 100, posY = 100;
-  let velX = 3, velY = 2;
-  let hue7 = 0;
-
-  function drawPage7() {
-      ctx.fillStyle = "rgba(0,0,0,0.1)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = `hsl(${hue7}, 80%, 60%)`;
-      ctx.beginPath();
-      ctx.arc(posX, posY, 30, 0, Math.PI*2);
-      ctx.fill();
-
-      // 移動
-      posX += velX;
-      posY += velY;
-
-      // 枠に当たったら跳ね返して色を変える
-      if(posX < 30 || posX > canvas.width-30) {
-          velX *= -1;
-          hue7 = (hue7 + 60) % 360; // 色を変える
-      }
-      if(posY < 30 || posY > canvas.height-30) {
-          velY *= -1;
-          hue7 = (hue7 + 60) % 360; // 色を変える
-      }
-
-      raf = requestAnimationFrame(drawPage7);
+  { % elif page_id == 7 % }
+// 007ページ: 高速反射ボール × 指数増殖
+class Ball {
+  constructor(x, y, vx, vy, hue) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.hue = hue;
   }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    let reflected = false;
+    
+    if (this.x < 30 || this.x > canvas.width - 30) {
+      this.vx *= -1;
+      reflected = true;
+    }
+    if (this.y < 30 || this.y > canvas.height - 30) {
+      this.vy *= -1;
+      reflected = true;
+    }
+    
+    // 反射したら色を変えて、ボールを複製
+    if (reflected) {
+      this.hue = (this.hue + 60) % 360;
+      const angleOffset = (Math.random() - 0.5) * 0.5; // 微妙に角度を変える
+      balls.push(new Ball(
+        this.x,
+        this.y,
+        this.vx * Math.cos(angleOffset) - this.vy * Math.sin(angleOffset),
+        this.vx * Math.sin(angleOffset) + this.vy * Math.cos(angleOffset),
+        this.hue
+      ));
+    }
+  }
+  draw() {
+    ctx.fillStyle = `hsl(${this.hue}, 80%, 60%)`;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
-  drawPage7();
+let balls = [new Ball(100, 100, 30, 20, 0)]; // 速度10倍に変更
+function drawPage7() {
+  ctx.fillStyle = "rgba(0,0,0,0.1)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // ボールの更新と描画
+  for (let i = 0; i < balls.length; i++) {
+    balls[i].update();
+    balls[i].draw();
+  }
+  
+  raf = requestAnimationFrame(drawPage7);
+}
+
+drawPage7();
 {% endif %}
 </script>
 </body>
