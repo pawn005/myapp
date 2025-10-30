@@ -28,6 +28,7 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+// ===== ページごとの描画 (Page0〜5) =====
 {% if page_id == 0 %}
 // 000ページ: 円周率アニメ
 const centerX = canvas.width / 2;
@@ -191,6 +192,7 @@ function drawGoldenSpiral() {
   requestAnimationFrame(drawGoldenSpiral);
 }
 drawGoldenSpiral();
+{% endif %}
 </script>
 
 {% if page_id == 6 %}
@@ -198,7 +200,6 @@ drawGoldenSpiral();
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <canvas id="apiChart" width="900" height="600" style="display:block; margin:0 auto;"></canvas>
 <script>
-// 東京23区の緯度経度リスト
 const wards = [
   {name:"千代田区", lat:35.6938, lon:139.753},
   {name:"中央区", lat:35.6717, lon:139.768},
@@ -225,63 +226,32 @@ const wards = [
   {name:"江戸川区", lat:35.6781, lon:139.8893}
 ];
 
-// 色をHSLで均等割り
-function getColor(i, total) {
-    const hue = i * 360 / total;
-    return `hsl(${hue}, 80%, 60%)`;
-}
+function getColor(i,total){ return `hsl(${i*360/total},80%,60%)`; }
 
 async function drawWardsChart() {
-    const labels = [];
-    const datasets = [];
-
-    for(let i=0; i<wards.length; i++){
-        const ward = wards[i];
-        try {
-            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${ward.lat}&longitude=${ward.lon}&hourly=temperature_2m`);
-            const json = await res.json();
-            const data = json.hourly.temperature_2m.slice(0,24); // 24時間分
-
-            // labelsは最初の1回だけ
-            if(labels.length === 0){
-                labels.push(...json.hourly.time.slice(0,24).map(t=>t.split("T")[1]));
-            }
-
-            datasets.push({
-                label: ward.name,
-                data: data,
-                borderColor: getColor(i, wards.length),
-                backgroundColor: "transparent",
-                fill: false,
-                tension: 0.3
-            });
-
-        } catch(e){
-            console.error(`${ward.name} API取得エラー:`, e);
-        }
-    }
-
-    const ctxChart = document.getElementById('apiChart').getContext('2d');
-    new Chart(ctxChart, {
-        type: 'line',
-        data: { labels, datasets },
-        options: { 
-            responsive: true,
-            plugins: { 
-                title: { display:true, text:"東京23区の過去24時間気温" },
-                legend: { position:'right', labels:{ boxWidth:12, padding:4, font:{size:12} } }
-            },
-            interaction: { mode: 'nearest', intersect: false },
-            scales: { 
-                x:{ title:{display:true, text:"時間"} },
-                y:{ title:{display:true, text:"℃"} }
-            }
-        }
-    });
+  const labels=[];
+  const datasets=[];
+  for(let i=0;i<wards.length;i++){
+    const ward=wards[i];
+    try{
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${ward.lat}&longitude=${ward.lon}&hourly=temperature_2m`);
+      const json = await res.json();
+      const data=json.hourly.temperature_2m.slice(0,24);
+      if(labels.length===0){ labels.push(...json.hourly.time.slice(0,24).map(t=>t.split("T")[1])); }
+      datasets.push({label:ward.name,data:data,borderColor:getColor(i,wards.length),backgroundColor:"transparent",fill:false,tension:0.3});
+    }catch(e){ console.error(`${ward.name} API取得エラー:`, e); }
+  }
+  const ctxChart = document.getElementById('apiChart').getContext('2d');
+  new Chart(ctxChart,{type:'line',data:{labels,datasets},options:{
+    responsive:true,
+    plugins:{title:{display:true,text:"東京23区の過去24時間気温"},legend:{position:'right',labels:{boxWidth:12,padding:4,font:{size:12}}}},
+    interaction:{mode:'nearest',intersect:false},
+    scales:{x:{title:{display:true,text:"時間"}},y:{title:{display:true,text:"℃"}}}
+  }});
 }
-
 drawWardsChart();
 </script>
 {% endif %}
+
 </body>
 </html>
