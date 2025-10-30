@@ -240,66 +240,68 @@ fetch("https://catfact.ninja/fact")
     console.error(err);
   });
   {% elif page_id == 7 %}
-// 007ページ: 高速反射ボール × 指数増殖
-class Ball {
-  constructor(x, y, vx, vy, hue) {
-    this.x = x;
-    this.y = y;
-    this.vx = vx;
-    this.vy = vy;
-    this.hue = hue;
-  }
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    
-    let reflected = false;
-    
-    if (this.x < 30 || this.x > canvas.width - 30) {
-      this.vx *= -1;
-      reflected = true;
-    }
-    if (this.y < 30 || this.y > canvas.height - 30) {
-      this.vy *= -1;
-      reflected = true;
-    }
-    
-    // 反射したら色を変えて、ボールを複製
-    if (reflected) {
-      this.hue = (this.hue + 60) % 360;
-      const angleOffset = (Math.random() - 0.5) * 0.5; // 微妙に角度を変える
-      balls.push(new Ball(
-        this.x,
-        this.y,
-        this.vx * Math.cos(angleOffset) - this.vy * Math.sin(angleOffset),
-        this.vx * Math.sin(angleOffset) + this.vy * Math.cos(angleOffset),
-        this.hue
-      ));
-    }
-  }
-  draw() {
-    ctx.fillStyle = `hsl(${this.hue}, 80%, 60%)`;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
-    ctx.fill();
-  }
+// 007ページ: 反射で色が変わるボール（ボール上限16）
+const balls = [];
+const maxBalls = 16;
+
+function createBall(x, y, vx, vy, radius) {
+    balls.push({x, y, vx, vy, radius, colorHue: Math.random()*360});
 }
 
-let balls = [new Ball(100, 100, 30, 20, 0)]; // 速度10倍に変更
-function drawPage7() {
-  ctx.fillStyle = "rgba(0,0,0,0.1)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // ボールの更新と描画
-  for (let i = 0; i < balls.length; i++) {
-    balls[i].update();
-    balls[i].draw();
-  }
-  
-  raf = requestAnimationFrame(drawPage7);
+function drawBalls() {
+    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const newBalls = [];
+    for(let ball of balls) {
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        // 反射チェック
+        if(ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+            ball.vx *= -1;
+            ball.colorHue = Math.random()*360;
+            if(balls.length + newBalls.length < maxBalls) {
+                // 反射時にボールを増やす（角度微妙に変化）
+                newBalls.push({
+                    x: ball.x,
+                    y: ball.y,
+                    vx: ball.vx * (Math.random()*0.4 + 0.8),
+                    vy: ball.vy * (Math.random()*0.4 + 0.8),
+                    radius: ball.radius,
+                    colorHue: Math.random()*360
+                });
+            }
+        }
+        if(ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+            ball.vy *= -1;
+            ball.colorHue = Math.random()*360;
+            if(balls.length + newBalls.length < maxBalls) {
+                newBalls.push({
+                    x: ball.x,
+                    y: ball.y,
+                    vx: ball.vx * (Math.random()*0.4 + 0.8),
+                    vy: ball.vy * (Math.random()*0.4 + 0.8),
+                    radius: ball.radius,
+                    colorHue: Math.random()*360
+                });
+            }
+        }
+
+        ctx.fillStyle = `hsl(${ball.colorHue}, 80%, 60%)`;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+        ctx.fill();
+    }
+
+    balls.push(...newBalls);
+
+    requestAnimationFrame(drawBalls);
 }
 
-drawPage7();
+// 初期ボール作成
+createBall(canvas.width/2, canvas.height/2, 10, 10, 20);
+drawBalls();
 {% endif %}
 </script>
 </body>
